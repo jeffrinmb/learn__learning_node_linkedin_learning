@@ -12,19 +12,29 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 const dbUrl = `mongodb+srv://${process.env.MONGO_DB_USER_NAME}:${process.env.MONGO_DB_USER_PASSWORD}@cluster0.fferj.mongodb.net/${process.env.MONGO_DB_NAME}?retryWrites=true&w=majority`;
 
-const messages = [
-  { name: 'Tim', message: 'Hello!' },
-  { name: 'James', message: 'Hi!' },
-];
+const Message = mongoose.model('Message', {
+  name: String,
+  message: String,
+});
 
 app.get('/messages', (req, res) => {
-  res.send(messages);
+  Message.find({}, (err, messages) => {
+    if (err) {
+      res.sendStatus(500);
+    }
+    res.send(messages);
+  });
 });
 
 app.post('/messages', (req, res) => {
-  messages.push(req.body);
-  io.emit('message', req.body);
-  res.sendStatus(200);
+  const message = new Message(req.body);
+  message.save((err) => {
+    if (err) {
+      res.sendStatus(500);
+    }
+    io.emit('message', req.body);
+    res.sendStatus(200);
+  });
 });
 
 io.on('connection', (socket) => { // eslint-disable-line
