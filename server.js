@@ -28,33 +28,35 @@ app.get('/messages', (req, res) => {
   });
 });
 
-app.post('/messages', (req, res) => {
-  const message = new Message(req.body);
-  // message.save((err) => {
-  //   if (err) {
-  //     res.sendStatus(500);
-  //   }
-  //   io.emit('message', req.body);
-  //   res.sendStatus(200);
-  // });
-  message.save()
-    .then(() => {
-      console.log('Saved');
-      return Message.findOne({ message: 'badword' });
-    })
-    .then((censoredWord) => {
-      if (censoredWord) {
-        console.log('Censored Words Found', censoredWord);
-        return Message.remove({ _id: censoredWord.id });
-      }
-      io.emit('message', req.body);
-      res.sendStatus(200);
-      return console.log('Returned Success');
-    })
-    .catch((err) => {
+app.get('/messages/:user', (req, res) => {
+  const user = req.params.user;
+  Message.find({ name: user }, (err, messages) => {
+    if (err) {
       res.sendStatus(500);
-      return console.error(err);
-    });
+    }
+    res.send(messages);
+  });
+});
+
+// eslint-disable-next-line consistent-return
+app.post('/messages', async (req, res) => {
+  try {
+    const message = new Message(req.body);
+    await message.save();
+    console.log('Saved');
+    const censoredWord = await Message.findOne({ message: 'badword' });
+    if (censoredWord) {
+      await Message.deleteOne({ _id: censoredWord.id });
+    } else {
+      io.emit('message', req.body);
+    }
+    res.sendStatus(200);
+  } catch (error) {
+    res.sendStatus(500);
+    return console.error(error);
+  } finally {
+    console.log('Message Post Called');
+  }
 });
 
 io.on('connection', (socket) => { // eslint-disable-line
