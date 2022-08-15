@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const express = require('express');
 const bodyParser = require('body-parser');
 require('dotenv').config();
@@ -28,42 +29,42 @@ app.get('/messages', (req, res) => {
   });
 });
 
-app.post('/messages', (req, res) => {
-  const message = new Message(req.body);
-  // message.save((err) => {
-  //   if (err) {
-  //     res.sendStatus(500);
-  //   }
-  //   io.emit('message', req.body);
-  //   res.sendStatus(200);
-  // });
-  message
-    .save()
-    .then(() => {
-      console.log('Saved');
-      return Message.findOne({ message: 'badword' });
-    })
-    .then(censoredWord => {
-      if (censoredWord) {
-        console.log('Censored Words Found', censoredWord);
-        return Message.remove({ _id: censoredWord.id });
-      }
-      io.emit('message', req.body);
-      res.sendStatus(200);
-      return console.log('Returned Success');
-    })
-    .catch(err => {
+app.get('/messages/:user', (req, res) => {
+  const user = req.params.user;
+  Message.find({ name: user }, (err, messages) => {
+    if (err) {
       res.sendStatus(500);
-      return console.error(err);
-    });
+    }
+    res.send(messages);
+  });
 });
 
-// eslint-disable-next-line no-unused-vars
-io.on('connection', socket => {
+// eslint-disable-next-line consistent-return
+app.post('/messages', async (req, res) => {
+  try {
+    const message = new Message(req.body);
+    await message.save();
+    console.log('Saved');
+    const censoredWord = await Message.findOne({ message: 'badword' });
+    if (censoredWord) {
+      await Message.deleteOne({ _id: censoredWord.id });
+    } else {
+      io.emit('message', req.body);
+    }
+    res.sendStatus(200);
+  } catch (error) {
+    res.sendStatus(500);
+    return console.error(error);
+  } finally {
+    console.log('Message Post Called');
+  }
+});
+
+io.on('connection', (socket) => { // eslint-disable-line
   console.log('A User Connected!');
 });
 
-mongoose.connect(dbUrl, err => {
+mongoose.connect(dbUrl, (err) => {
   if (err) {
     console.log('Mongo DB Connection Error', err);
   } else {
@@ -74,3 +75,4 @@ mongoose.connect(dbUrl, err => {
 const server = http.listen(3000, () => {
   console.log('Server is listening on Port', server.address().port);
 });
+>>>>>>> 0776e3cbd7070f5f137f1bb3b46edb80c057c749
