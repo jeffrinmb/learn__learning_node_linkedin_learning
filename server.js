@@ -37,12 +37,13 @@ app.post('/messages', (req, res) => {
   //   io.emit('message', req.body);
   //   res.sendStatus(200);
   // });
-  message.save()
+  message
+    .save()
     .then(() => {
       console.log('Saved');
       return Message.findOne({ message: 'badword' });
     })
-    .then((censoredWord) => {
+    .then(censoredWord => {
       if (censoredWord) {
         console.log('Censored Words Found', censoredWord);
         return Message.remove({ _id: censoredWord.id });
@@ -51,17 +52,18 @@ app.post('/messages', (req, res) => {
       res.sendStatus(200);
       return console.log('Returned Success');
     })
-    .catch((err) => {
+    .catch(err => {
       res.sendStatus(500);
       return console.error(err);
     });
 });
 
-io.on('connection', (socket) => { // eslint-disable-line
+// eslint-disable-next-line no-unused-vars
+io.on('connection', socket => {
   console.log('A User Connected!');
 });
 
-mongoose.connect(dbUrl, (err) => {
+mongoose.connect(dbUrl, err => {
   if (err) {
     console.log('Mongo DB Connection Error', err);
   } else {
