@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+// eslint-disable-next-line import/no-unresolved
 const request = require('request');
 
 describe('calc', () => {
@@ -8,13 +9,13 @@ describe('calc', () => {
 });
 
 describe('get messages', () => {
-  it('Should Return 200 OK', (done) => {
+  it('Should Return 200 OK', done => {
     request.get('http://localhost:3000/messages', (err, res) => {
       expect(res.statusCode).toEqual(200);
       done();
     });
   });
-  it('Should Return Non Empty List', (done) => {
+  it('Should Return Non Empty List', done => {
     request.get('http://localhost:3000/messages', (err, res) => {
       expect(JSON.parse(res.body).length).toBeGreaterThan(0);
       done();
@@ -23,13 +24,13 @@ describe('get messages', () => {
 });
 
 describe('get user specific messages', () => {
-  it('Should Return 200 OK', (done) => {
+  it('Should Return 200 OK', done => {
     request.get('http://localhost:3000/messages/Jeff', (err, res) => {
       expect(res.statusCode).toEqual(200);
       done();
     });
   });
-  it('Name Should Be Jeff', (done) => {
+  it('Name Should Be Jeff', done => {
     request.get('http://localhost:3000/messages/Jeff', (err, res) => {
       expect(JSON.parse(res.body)[0].name).toEqual('Jeff');
       done();
